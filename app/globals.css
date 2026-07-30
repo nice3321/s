@@ -1,0 +1,128 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* سُفرة — لوحة الألوان والخطوط. القسم ٩ من المواصفة. */
+
+@theme inline {
+  /* الألوان الأساسية — تُستعمل مباشرة: text-ink، bg-palm، text-saffron */
+  --color-ink: var(--ink);
+  --color-gypsum: var(--gypsum);
+  --color-palm: var(--palm);
+  --color-saffron: var(--saffron);
+  --color-clay: var(--clay);
+
+  /* رموز shadcn معاد ربطها باللوحة */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-display: var(--font-noto-kufi);
+  --font-sans: var(--font-plex-arabic);
+  --font-mono: var(--font-plex-mono);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+:root {
+  --ink: #12211c;
+  --gypsum: #f1f4ef;
+  --palm: #1f5c4a;
+  --saffron: #e0a32e;
+  --clay: #b4402f;
+  --muted-ink: #7c8b84;
+
+  --background: var(--gypsum);
+  --foreground: var(--ink);
+  --card: #fbfcfa;
+  --card-foreground: var(--ink);
+  --popover: #fbfcfa;
+  --popover-foreground: var(--ink);
+  --primary: var(--palm);
+  --primary-foreground: var(--gypsum);
+  --secondary: #e3e8e2;
+  --secondary-foreground: var(--ink);
+  --muted: #e3e8e2;
+  --muted-foreground: var(--muted-ink);
+  --accent: #dfe7e2;
+  --accent-foreground: var(--palm);
+  --destructive: var(--clay);
+  --border: #d5dcd6;
+  --input: #d5dcd6;
+  --ring: var(--palm);
+
+  --radius: 0.625rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply font-sans;
+    /* الحد الأدنى ١٦px لنص المتن — قراءة تحت شمس ساطعة */
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+
+  /* التركيز مرئي دائماً — لا نزيله أبداً */
+  :focus-visible {
+    outline: 3px solid var(--palm);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* الأرقام لا تقفز في المؤقتات والأوزان */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* هدف لمس ٤٨px — العمل بيد واحدة في الميدان */
+  .tap {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
