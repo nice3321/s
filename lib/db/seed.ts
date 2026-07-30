@@ -95,11 +95,9 @@ try {
   insUser.run(adminId, "إدارة سُفرة", nextPhone(), "admin", JSON.stringify(districts.map((d) => d.id)), now);
 
   // منسّق لكل منطقة — نطاق رؤيته منطقته وحدها
-  const coordinators = districts.map((d) => {
-    const id = randomUUID();
-    insUser.run(id, `منسّق ${d.ar}`, nextPhone(), "coordinator", JSON.stringify([d.id]), now);
-    return { id, district: d.id };
-  });
+  for (const d of districts) {
+    insUser.run(randomUUID(), `منسّق ${d.ar}`, nextPhone(), "coordinator", JSON.stringify([d.id]), now);
+  }
 
   // متطوعون: ثلاثة لكل فريق
   const volunteers: Array<{ id: string; district: string }> = [];
