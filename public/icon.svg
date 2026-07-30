@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="14" fill="#1F5C4A"/>
-  <!-- قِدر تقديم: الشكل الذي يبنى عليه مؤقّت الساعتين لاحقاً -->
-  <path d="M14 28h36a0 0 0 0 1 0 0v6a18 18 0 0 1-18 18 18 18 0 0 1-18-18v-6z" fill="#F1F4EF"/>
-  <rect x="10" y="23" width="44" height="6" rx="3" fill="#E0A32E"/>
-  <path d="M26 18c0-4 4-4 4-8M36 18c0-4 4-4 4-8" stroke="#F1F4EF" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <rect width="64" height="64" rx="14" fill="#242D52"/>
+  <!-- ضمّة الشعار — علامة سُفرة -->
+  <g fill="none" stroke="#EA6A12" stroke-width="7" stroke-linecap="round">
+    <path d="M43 16a10.5 10.5 0 1 1-11 11"/>
+    <path d="M32 27C32 39.5 25.5 45.5 14 47.5"/>
+  </g>
 </svg>

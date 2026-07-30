@@ -2,17 +2,17 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* سُفرة — لوحة الألوان والخطوط. القسم ٩ من المواصفة. */
+/* سُفرة — الهوية مستمدة من الشعار: كحلي عميق، برتقالي الضمّة، أرضية دافئة.
+   البرتقالي (saffron) يحمل معنى واحداً: الوقت والإلحاح واللمسة — لا زخرفة عامة. */
 
 @theme inline {
-  /* الألوان الأساسية — تُستعمل مباشرة: text-ink، bg-palm، text-saffron */
+  /* ألوان الهوية — تُستعمل مباشرة: text-ink، bg-saffron، border-clay */
   --color-ink: var(--ink);
   --color-gypsum: var(--gypsum);
-  --color-palm: var(--palm);
   --color-saffron: var(--saffron);
   --color-clay: var(--clay);
 
-  /* رموز shadcn معاد ربطها باللوحة */
+  /* رموز shadcn معاد ربطها بالهوية */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -44,33 +44,32 @@
 }
 
 :root {
-  --ink: #12211c;
-  --gypsum: #f1f4ef;
-  --palm: #1f5c4a;
-  --saffron: #e0a32e;
-  --clay: #b4402f;
-  --muted-ink: #7c8b84;
+  --ink: #242d52;      /* كحلي الشعار — النص والأزرار الأساسية */
+  --gypsum: #f6f4ef;   /* أرضية دافئة كخلفية الشعار */
+  --saffron: #ea6a12;  /* برتقالي الضمّة — الوقت والإلحاح فقط */
+  --clay: #b4402f;     /* الخطر وانتهاء المهلة فقط */
+  --muted-ink: #6f7488;
 
   --background: var(--gypsum);
   --foreground: var(--ink);
-  --card: #fbfcfa;
+  --card: #fdfcf9;
   --card-foreground: var(--ink);
-  --popover: #fbfcfa;
+  --popover: #fdfcf9;
   --popover-foreground: var(--ink);
-  --primary: var(--palm);
-  --primary-foreground: var(--gypsum);
-  --secondary: #e3e8e2;
+  --primary: var(--ink);
+  --primary-foreground: #f8f7f2;
+  --secondary: #eceae2;
   --secondary-foreground: var(--ink);
-  --muted: #e3e8e2;
+  --muted: #eceae2;
   --muted-foreground: var(--muted-ink);
-  --accent: #dfe7e2;
-  --accent-foreground: var(--palm);
+  --accent: #edeff6; /* مسحة كحلية فاتحة للمساحات المميّزة */
+  --accent-foreground: var(--ink);
   --destructive: var(--clay);
-  --border: #d5dcd6;
-  --input: #d5dcd6;
-  --ring: var(--palm);
+  --border: #e2dfd5;
+  --input: #e2dfd5;
+  --ring: var(--saffron);
 
-  --radius: 0.625rem;
+  --radius: 0.75rem;
 }
 
 @layer base {
@@ -93,11 +92,16 @@
   h2,
   h3 {
     @apply font-display;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: rgb(234 106 18 / 0.25);
   }
 
   /* التركيز مرئي دائماً — لا نزيله أبداً */
   :focus-visible {
-    outline: 3px solid var(--palm);
+    outline: 3px solid var(--saffron);
     outline-offset: 2px;
   }
 }
@@ -113,6 +117,30 @@
   .tap {
     min-height: 48px;
     min-width: 48px;
+  }
+
+  /* سطح البطاقة الموحّد: خلفية، إطار، ظل ناعم مزدوج */
+  .surface {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 1.6);
+    box-shadow:
+      0 1px 2px rgb(36 45 82 / 0.05),
+      0 12px 32px -16px rgb(36 45 82 / 0.14);
+  }
+
+  .lift {
+    transition:
+      translate 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  @media (hover: hover) {
+    .lift:hover {
+      translate: 0 -2px;
+      box-shadow:
+        0 2px 4px rgb(36 45 82 / 0.05),
+        0 20px 44px -16px rgb(36 45 82 / 0.18);
+    }
   }
 }
 

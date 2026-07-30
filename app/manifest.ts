@@ -12,8 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
     dir: dirOf(defaultLocale),
     start_url: "/",
     display: "standalone",
-    background_color: "#f1f4ef",
-    theme_color: "#1f5c4a",
+    background_color: "#f6f4ef",
+    theme_color: "#242d52",
     icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }],
   };
 }

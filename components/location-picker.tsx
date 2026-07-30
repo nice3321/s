@@ -17,8 +17,8 @@ export interface LatLng {
 
 // أيقونة من اللوحة نفسها. تتجنّب أيضاً مسارات صور Leaflet المعطوبة مع الحزم.
 const PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 44" width="32" height="44">
-  <path d="M16 43C16 43 30 26.5 30 16A14 14 0 1 0 2 16c0 10.5 14 27 14 27z" fill="#1F5C4A" stroke="#F1F4EF" stroke-width="2"/>
-  <circle cx="16" cy="16" r="5.5" fill="#E0A32E"/>
+  <path d="M16 43C16 43 30 26.5 30 16A14 14 0 1 0 2 16c0 10.5 14 27 14 27z" fill="#242D52" stroke="#F6F4EF" stroke-width="2"/>
+  <circle cx="16" cy="16" r="5.5" fill="#EA6A12"/>
 </svg>`;
 
 export function LocationPicker({

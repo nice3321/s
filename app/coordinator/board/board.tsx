@@ -26,7 +26,7 @@ const URGENCY_STYLE: Record<Urgency, string> = {
 
 // الخط العلوي للبطاقة: هدوء عند الاتّساع، وسَفرون كلما ضاق الوقت.
 const URGENCY_RAIL: Record<Urgency, string> = {
-  calm: "bg-palm/35",
+  calm: "bg-ink/20",
   soon: "bg-saffron/70",
   now: "bg-saffron",
   passed: "bg-clay",
@@ -34,8 +34,8 @@ const URGENCY_RAIL: Record<Urgency, string> = {
 
 const STATUS_STYLE: Record<EventStatus, string> = {
   draft: "border-border bg-muted text-ink/60",
-  confirmed: "border-palm/40 bg-transparent text-palm",
-  team_assigned: "border-palm bg-palm text-gypsum",
+  confirmed: "border-ink/40 bg-transparent text-ink",
+  team_assigned: "border-ink bg-ink text-gypsum",
   collected: "border-border bg-muted text-ink/60",
   closed: "border-border bg-muted text-ink/60",
   cancelled: "border-border bg-muted text-ink/60",
@@ -136,7 +136,7 @@ function EventCard({ event, nowMs }: { event: BoardEvent; nowMs: number | null }
   const urgency: Urgency = msLeft === null ? "calm" : urgencyOf(msLeft);
 
   return (
-    <li className="overflow-hidden rounded-xl border border-border bg-card">
+    <li className="surface lift overflow-hidden">
       <div aria-hidden="true" className={`h-1 w-full ${URGENCY_RAIL[urgency]}`} />
 
       <div className="space-y-4 p-4">
@@ -162,7 +162,7 @@ function EventCard({ event, nowMs }: { event: BoardEvent; nowMs: number | null }
         <div className="flex items-end gap-6">
           <div>
             <div className="text-xs text-muted-foreground">{t.board.card.forecast}</div>
-            <div className="tnum font-mono text-2xl font-semibold text-palm">
+            <div className="tnum font-mono text-2xl font-semibold text-ink">
               {fmtNumber(event.forecastSurplusKg)}
               <span className="ms-1 font-sans text-sm font-normal text-ink/60">
                 {t.common.kg}
@@ -211,10 +211,10 @@ function Stat({
   alert?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="surface p-4">
       <div
         className={`tnum font-mono text-3xl font-semibold ${
-          alert && value !== "0" ? "text-saffron" : "text-palm"
+          alert && value !== "0" ? "text-saffron" : "text-ink"
         }`}
       >
         {value}
@@ -241,8 +241,8 @@ function Chip({
       aria-pressed={active}
       className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
         active
-          ? "border-palm bg-palm text-gypsum"
-          : "border-border bg-card text-ink/75 hover:border-palm/40 hover:text-palm"
+          ? "border-ink bg-ink text-gypsum"
+          : "border-border bg-card text-ink/75 hover:border-ink/40 hover:text-ink"
       }`}
     >
       {children}

@@ -74,9 +74,9 @@ export function EventForm({
 
   if (state.status === "success") {
     return (
-      <Card className="border-palm/30">
+      <Card className="border-ink/30">
         <CardHeader>
-          <CardTitle className="font-display text-2xl text-palm">
+          <CardTitle className="font-display text-2xl text-ink">
             {t.newEvent.successTitle}
           </CardTitle>
         </CardHeader>
@@ -84,7 +84,7 @@ export function EventForm({
           <p className="text-base leading-relaxed">{t.newEvent.successBody}</p>
           <div className="rounded-lg bg-accent p-4">
             <div className="text-sm text-muted-foreground">{t.newEvent.forecast.kg}</div>
-            <div className="tnum font-mono text-3xl font-semibold text-palm">
+            <div className="tnum font-mono text-3xl font-semibold text-ink">
               {nf.format(state.forecastKg)}{" "}
               <span className="font-sans text-lg">{t.common.kg}</span>
             </div>
@@ -259,7 +259,7 @@ export function EventForm({
       </Card>
 
       {/* ── الإقرار ── */}
-      <Card className="border-palm/40 bg-accent/40">
+      <Card className="border-ink/40 bg-accent/40">
         <CardHeader>
           <CardTitle className="font-display text-xl">
             {t.newEvent.section.declaration}
@@ -336,21 +336,21 @@ function Declaration({ name, text }: { name: string; text: string }) {
 
 function Forecast({ forecast }: { forecast: { kg: number; meals: number } | null }) {
   return (
-    <div className="rounded-lg border border-palm/30 bg-accent p-4">
-      <div className="font-display text-sm text-palm">{t.newEvent.forecast.title}</div>
+    <div className="rounded-lg border border-ink/30 bg-accent p-4">
+      <div className="font-display text-sm text-ink">{t.newEvent.forecast.title}</div>
       {forecast ? (
         <>
           <div className="mt-3 flex items-end gap-6">
             <div>
               <div className="text-sm text-muted-foreground">{t.newEvent.forecast.kg}</div>
-              <div className="tnum font-mono text-3xl font-semibold text-palm">
+              <div className="tnum font-mono text-3xl font-semibold text-ink">
                 {nf.format(forecast.kg)}{" "}
                 <span className="font-sans text-base">{t.common.kg}</span>
               </div>
             </div>
             <div>
               <div className="text-sm text-muted-foreground">{t.newEvent.forecast.meals}</div>
-              <div className="tnum font-mono text-3xl font-semibold text-palm">
+              <div className="tnum font-mono text-3xl font-semibold text-ink">
                 {nf.format(forecast.meals)}{" "}
                 <span className="font-sans text-base">{t.common.meals}</span>
               </div>
