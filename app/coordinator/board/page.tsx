@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 const t = getDictionary();
 
-export const metadata = { title: `${t.board.title} — ${t.app.name}` };
+export const metadata = { title: t.board.title };
 
 /** نافذة اللوحة: من الآن حتى ٧٢ ساعة. */
 const WINDOW_MS = 72 * 60 * 60 * 1000;

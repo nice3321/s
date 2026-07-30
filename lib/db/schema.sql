@@ -239,6 +239,44 @@ CREATE TABLE IF NOT EXISTS incidents (
   deleted_at       INTEGER
 );
 
+-- ── طلبات الانضمام كشريك ───────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS partner_applications (
+  id             TEXT PRIMARY KEY,
+  applicant_role TEXT NOT NULL CHECK (applicant_role IN ('owner','staff','referral')),
+  business_name  TEXT NOT NULL,
+  business_type  TEXT NOT NULL
+                   CHECK (business_type IN ('restaurant','bakery','cafe','grocery','venue','other')),
+  contact_name   TEXT NOT NULL,
+  phone          TEXT NOT NULL,
+  district_id    TEXT NOT NULL REFERENCES districts(id),
+  address_text   TEXT,
+  message        TEXT,
+  status         TEXT NOT NULL DEFAULT 'new'
+                   CHECK (status IN ('new','contacted','approved','rejected')),
+  created_at     INTEGER NOT NULL,
+  deleted_at     INTEGER,
+  CHECK (phone GLOB '+9647[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]')
+);
+CREATE INDEX IF NOT EXISTS idx_partner_apps
+  ON partner_applications (status, created_at DESC) WHERE deleted_at IS NULL;
+
+-- ── صور منتجات الشركاء ─────────────────────────────────────────────────────
+-- الملف نفسه على القرص في مجلد الرفع؛ هنا اسمه فقط. لا نخزّن مساراً كاملاً
+-- ولا اسماً قادماً من المتصفح — الاسم يُولَّد في الخادم.
+CREATE TABLE IF NOT EXISTS partner_products (
+  id              TEXT PRIMARY KEY,
+  organization_id TEXT NOT NULL REFERENCES organizations(id),
+  title_ar        TEXT NOT NULL,
+  file_name       TEXT NOT NULL UNIQUE,
+  mime            TEXT NOT NULL CHECK (mime IN ('image/jpeg','image/png','image/webp')),
+  bytes           INTEGER NOT NULL CHECK (bytes > 0),
+  created_at      INTEGER NOT NULL,
+  deleted_at      INTEGER,
+  CHECK (file_name GLOB '[0-9a-f]*.[a-z][a-z]*')
+);
+CREATE INDEX IF NOT EXISTS idx_partner_products
+  ON partner_products (organization_id, created_at DESC) WHERE deleted_at IS NULL;
+
 -- ── سجل التدقيق ────────────────────────────────────────────────────────────
 -- القاعدة ٦: إلحاق فقط. لا تعديل ولا حذف، والمحرّكان أدناه يفرضان ذلك.
 CREATE TABLE IF NOT EXISTS audit_log (

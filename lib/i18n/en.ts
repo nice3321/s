@@ -134,6 +134,102 @@ export const en = {
     },
   },
 
+  everyone: {
+    eyebrow: "Sufra is for everyone",
+    title: "Order once, gain twice",
+    lead: "Sufra is not only for those in need. It is for anyone who cannot stand watching good food thrown away. When you order, you spend less and stop waste — in the same move.",
+    benefitOneTitle: "Spend less",
+    benefitOneBody:
+      "The same meal from the same kitchen, up to 60% cheaper. Not a lesser version and not a different dish — the difference is when it is listed, not what it is.",
+    benefitTwoTitle: "Waste less",
+    benefitTwoBody:
+      "Every order is a ready meal that was not binned, and the water, energy and work behind it that did not go to nothing.",
+    nobleTitle: "A trait, not a need",
+    nobleBody:
+      "Ordering from Sufra is a stance: you refuse to let good food be thrown out. Whoever does it is not in need — they are someone who counts a blessing properly.",
+    cta: "Browse available meals",
+  },
+
+  partners: {
+    metaTitle: "Become a partner",
+    eyebrow: "For restaurants, bakeries, cafés and venues",
+    title: "Partner with us, and give what is left a second chance",
+    lead: "Instead of binning what did not sell by closing time, offer it to someone waiting for it. You recover part of the cost, reach new customers, and cut your waste — with no change to your kitchen.",
+    cta: "Apply to join",
+
+    statsTitle: "Where we work today",
+    statsNote: "Live numbers from the system, not estimates.",
+
+    benefitsTitle: "What you gain",
+    benefit: {
+      wasteTitle: "Less surplus at closing",
+      wasteBody: "List what is left early enough, so the stock moves instead of being thrown out.",
+      revenueTitle: "Revenue from what was a loss",
+      revenueBody: "The discounted price recovers part of the cost. Payment reaches you directly at handover.",
+      customersTitle: "New customers through your door",
+      customersBody: "Whoever collects an order today may come back tomorrow at full price.",
+      reputationTitle: "Impact counted for you",
+      reputationBody: "Your participation is recorded in what was rescued in your district — in numbers you can show, not claims.",
+    },
+
+    stepsTitle: "How to start",
+    step1: "Fill in the form below, it takes a minute",
+    step2: "Your district coordinator calls you and agrees the details",
+    step3: "Upload your product photos and start listing offers",
+
+    galleryTitle: "From our partners' kitchens",
+    galleryEmpty: "No photos yet. The first partner to upload appears here.",
+
+    uploadTitle: "Upload your product photos",
+    uploadLead: "A clear photo of the dish drives more bookings than any description. Pick your business, then add the photo.",
+    uploadOrg: "Business",
+    uploadName: "Item name",
+    uploadFile: "Product photo",
+    uploadHint: "JPG, PNG or WebP, up to 4 MB.",
+    uploadSubmit: "Add photo",
+    uploadPending: "Uploading…",
+    uploadSuccess: "Photo added.",
+
+    form: {
+      title: "Application",
+      lead: "Fill in what you know now, we complete the rest by phone.",
+      role: "You are",
+      roleOwner: "The owner",
+      roleStaff: "I work there",
+      roleReferral: "Referring a business",
+      businessName: "Business name",
+      businessType: "Activity",
+      contactName: "Your name",
+      phone: "Contact number",
+      district: "District",
+      address: "Address description",
+      message: "Anything to add",
+      submit: "Send application",
+      submitting: "Sending…",
+      successTitle: "We received your application",
+      successBody: "Your district coordinator will call you within two working days.",
+      another: "Send another application",
+    },
+
+    businessType: {
+      restaurant: "Restaurant",
+      bakery: "Bakery",
+      cafe: "Café",
+      grocery: "Grocery or supermarket",
+      venue: "Event venue",
+      other: "Other",
+    },
+  },
+
+  uploadError: {
+    empty: "The file is empty",
+    too_large: "The photo is larger than 4 MB",
+    unsupported_type: "Unsupported format. Use JPG, PNG or WebP",
+    org_required: "Choose the business",
+    title_required: "Enter the item name",
+    generic: "Upload failed. Please try again.",
+  },
+
   roles: {
     admin: "Admin",
     coordinator: "District coordinator",

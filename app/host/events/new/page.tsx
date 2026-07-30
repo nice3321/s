@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 const t = getDictionary();
 
-export const metadata = { title: `${t.newEvent.title} — ${t.app.name}` };
+export const metadata = { title: t.newEvent.title };
 
 export default async function NewEventPage() {
   const provider = getProvider();

@@ -27,6 +27,12 @@ export function SiteHeader() {
             كيف تعمل؟
           </Link>
           <Link
+            href="/partners"
+            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-ink/75 transition-colors hover:bg-accent hover:text-ink md:block"
+          >
+            {t.partners.metaTitle}
+          </Link>
+          <Link
             href="/host/events/new"
             className="hidden rounded-lg px-3 py-2 text-sm font-medium text-ink/75 transition-colors hover:bg-accent hover:text-ink lg:block"
           >

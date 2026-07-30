@@ -1,23 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans_Arabic, Noto_Kufi_Arabic } from "next/font/google";
+import { IBM_Plex_Mono, Tajawal } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Toaster } from "@/components/ui/sonner";
 import { defaultLocale, dictionaries, dirOf } from "@/lib/i18n";
 import "./globals.css";
 
-// عرض — معماري، يُستعمل بحجم كبير وبانضباط
-const notoKufi = Noto_Kufi_Arabic({
-  variable: "--font-noto-kufi",
-  subsets: ["arabic"],
-  display: "swap",
-});
-
-// متن وواجهة — إنساني، مقروء تحت الشمس بأحجام صغيرة
-const plexArabic = IBM_Plex_Sans_Arabic({
-  variable: "--font-plex-arabic",
+// تجوال — خط الواجهة الوحيد: عناوين ومتن. هندسي عربي واضح على الشاشات الصغيرة.
+const tajawal = Tajawal({
+  variable: "--font-tajawal",
   subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "700", "800"],
   display: "swap",
 });
 
@@ -54,7 +47,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html
       lang={defaultLocale}
       dir={dirOf(defaultLocale)}
-      className={`${notoKufi.variable} ${plexArabic.variable} ${plexMono.variable} h-full`}
+      className={`${tajawal.variable} ${plexMono.variable} h-full`}
     >
       <body className="flex min-h-full flex-col">
         <a

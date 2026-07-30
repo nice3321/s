@@ -96,6 +96,29 @@ export interface BoardEvent {
   hostPhone: string;
 }
 
+export type ApplicantRole = "owner" | "staff" | "referral";
+export type BusinessType = "restaurant" | "bakery" | "cafe" | "grocery" | "venue" | "other";
+
+export interface PartnerApplicationInput {
+  applicantRole: ApplicantRole;
+  businessName: string;
+  businessType: BusinessType;
+  contactName: string;
+  phone: string;
+  districtId: string;
+  addressText: string | null;
+  message: string | null;
+}
+
+export interface PartnerProduct {
+  id: string;
+  organizationId: string;
+  organizationNameAr: string;
+  titleAr: string;
+  fileName: string;
+  createdAt: number;
+}
+
 export interface AuditEntry {
   actorUserId: string | null;
   entityType: string;

@@ -8,12 +8,14 @@ import {
   CheckCircle2,
   Clock3,
   HeartHandshake,
+  Leaf,
   MapPin,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
   Store,
   Utensils,
+  Wallet,
 } from "lucide-react";
 import { Damma } from "@/components/logo";
 import { MealMarketplace } from "@/components/meal-marketplace";
@@ -330,6 +332,51 @@ export default async function Home() {
               <p className="mt-3 leading-7 text-ink/60">
                 ربط الطلب بشركة التوصيل مع إظهار الرسوم والحالة ووقت الوصول المتوقع.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* سُفرة لكل الناس — الطلب ليس دليل حاجة، بل موقف من الهدر */}
+      <section className="border-y border-border bg-card/60">
+        <div className="mx-auto w-full max-w-7xl px-4 py-20 lg:px-8">
+          <p className="text-sm font-semibold text-saffron">{t.everyone.eyebrow}</p>
+          <h2 className="mt-2 max-w-3xl text-3xl leading-snug text-ink sm:text-4xl">
+            {t.everyone.title}
+          </h2>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-ink/70">{t.everyone.lead}</p>
+
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
+            <div className="surface p-7">
+              <span className="flex size-12 items-center justify-center rounded-xl bg-saffron/12 text-saffron">
+                <Wallet className="size-6" aria-hidden="true" />
+              </span>
+              <h3 className="mt-5 text-xl text-ink">{t.everyone.benefitOneTitle}</h3>
+              <p className="mt-2.5 leading-relaxed text-ink/65">{t.everyone.benefitOneBody}</p>
+            </div>
+
+            <div className="surface p-7">
+              <span className="flex size-12 items-center justify-center rounded-xl bg-saffron/12 text-saffron">
+                <Leaf className="size-6" aria-hidden="true" />
+              </span>
+              <h3 className="mt-5 text-xl text-ink">{t.everyone.benefitTwoTitle}</h3>
+              <p className="mt-2.5 leading-relaxed text-ink/65">{t.everyone.benefitTwoBody}</p>
+            </div>
+
+            {/* الخصلة: القيمة التي تجعل الطلب موقفاً لا حاجة — تُبرز بالكحلي */}
+            <div className="flex flex-col rounded-2xl bg-ink p-7 text-gypsum">
+              <span className="flex size-12 items-center justify-center rounded-xl bg-saffron/20 text-saffron">
+                <Sparkles className="size-6" aria-hidden="true" />
+              </span>
+              <h3 className="mt-5 text-xl">{t.everyone.nobleTitle}</h3>
+              <p className="mt-2.5 flex-1 leading-relaxed text-gypsum/75">{t.everyone.nobleBody}</p>
+              <Button
+                render={<Link href="#meals" />}
+                nativeButton={false}
+                className="tap mt-7 h-12 self-start bg-saffron px-6 text-base font-semibold text-gypsum hover:bg-saffron/90"
+              >
+                {t.everyone.cta}
+              </Button>
             </div>
           </div>
         </div>

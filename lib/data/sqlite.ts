@@ -10,6 +10,8 @@ import type {
   District,
   Event,
   Organization,
+  PartnerApplicationInput,
+  PartnerProduct,
 } from "@/lib/types";
 import type { BoardQuery, BoardResult, Coverage, DataProvider } from "./provider";
 
@@ -273,6 +275,104 @@ export class SqliteProvider implements DataProvider {
     }));
 
     return { windowStart, events };
+  }
+
+  async createPartnerApplication(input: PartnerApplicationInput): Promise<string> {
+    const id = randomUUID();
+    const now = Date.now();
+
+    this.db
+      .prepare(
+        `INSERT INTO partner_applications (id, applicant_role, business_name, business_type,
+           contact_name, phone, district_id, address_text, message, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?)`,
+      )
+      .run(
+        id,
+        input.applicantRole,
+        input.businessName,
+        input.businessType,
+        input.contactName,
+        input.phone,
+        input.districtId,
+        input.addressText,
+        input.message,
+        now,
+      );
+
+    this.appendAudit({
+      actorUserId: null,
+      entityType: "partner_application",
+      entityId: id,
+      action: "create",
+      before: null,
+      after: { businessName: input.businessName, businessType: input.businessType },
+    });
+
+    return id;
+  }
+
+  async listPartnerProducts(organizationId?: string): Promise<PartnerProduct[]> {
+    const where = organizationId ? "AND p.organization_id = ?" : "";
+    const rows = this.db
+      .prepare(
+        `SELECT p.id, p.organization_id, p.title_ar, p.file_name, p.created_at,
+                o.name_ar AS organization_name_ar
+           FROM partner_products p
+           JOIN organizations o ON o.id = p.organization_id
+          WHERE p.deleted_at IS NULL ${where}
+          ORDER BY p.created_at DESC`,
+      )
+      .all(...(organizationId ? [organizationId] : [])) as Row[];
+
+    return rows.map((r) => ({
+      id: str(r.id),
+      organizationId: str(r.organization_id),
+      organizationNameAr: str(r.organization_name_ar),
+      titleAr: str(r.title_ar),
+      fileName: str(r.file_name),
+      createdAt: num(r.created_at),
+    }));
+  }
+
+  async addPartnerProduct(input: {
+    organizationId: string;
+    titleAr: string;
+    fileName: string;
+    mime: string;
+    bytes: number;
+  }): Promise<PartnerProduct> {
+    const id = randomUUID();
+    const now = Date.now();
+
+    this.db
+      .prepare(
+        `INSERT INTO partner_products (id, organization_id, title_ar, file_name, mime, bytes, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(id, input.organizationId, input.titleAr, input.fileName, input.mime, input.bytes, now);
+
+    this.appendAudit({
+      actorUserId: null,
+      entityType: "partner_product",
+      entityId: id,
+      action: "create",
+      before: null,
+      after: { organizationId: input.organizationId, fileName: input.fileName },
+    });
+
+    const org = this.db
+      .prepare("SELECT name_ar FROM organizations WHERE id = ?")
+      .get(input.organizationId) as Row | undefined;
+
+    return {
+      id,
+      organizationId: input.organizationId,
+      organizationNameAr: org ? str(org.name_ar) : "",
+      titleAr: input.titleAr,
+      fileName: input.fileName,
+      createdAt: now,
+    };
   }
 
   async getCoverage(): Promise<Coverage> {

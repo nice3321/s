@@ -32,8 +32,9 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --font-display: var(--font-noto-kufi);
-  --font-sans: var(--font-plex-arabic);
+  /* تجوال للعناوين والمتن معاً؛ الفرق بينهما بالوزن لا بالخط. */
+  --font-display: var(--font-tajawal);
+  --font-sans: var(--font-tajawal);
   --font-mono: var(--font-plex-mono);
 
   --radius-sm: calc(var(--radius) * 0.6);
@@ -93,10 +94,12 @@
     scroll-padding-top: 5.5rem;
   }
 
+  /* تجوال يميل للانضغاط في العناوين الكبيرة — نفتح التتبّع قليلاً ونثقّل الوزن. */
   h1,
   h2,
   h3 {
-    @apply font-display;
+    @apply font-display font-bold;
+    letter-spacing: 0.01em;
     text-wrap: balance;
   }
 

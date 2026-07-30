@@ -4,6 +4,8 @@ import type {
   District,
   Event,
   Organization,
+  PartnerApplicationInput,
+  PartnerProduct,
 } from "@/lib/types";
 
 export interface BoardQuery {
@@ -48,4 +50,19 @@ export interface DataProvider {
   listBoardEvents(query: BoardQuery): Promise<BoardResult>;
 
   getCoverage(): Promise<Coverage>;
+
+  /** طلب انضمام شريك جديد. يعود بمعرّف الطلب. */
+  createPartnerApplication(input: PartnerApplicationInput): Promise<string>;
+
+  /** صور منتجات الشركاء — كلها أو لشريك واحد. */
+  listPartnerProducts(organizationId?: string): Promise<PartnerProduct[]>;
+
+  /** يُستدعى بعد حفظ الملف على القرص؛ الاسم مُولَّد في الخادم لا من المتصفح. */
+  addPartnerProduct(input: {
+    organizationId: string;
+    titleAr: string;
+    fileName: string;
+    mime: string;
+    bytes: number;
+  }): Promise<PartnerProduct>;
 }

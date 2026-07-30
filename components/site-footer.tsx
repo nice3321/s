@@ -32,6 +32,12 @@ export function SiteFooter() {
             سجّل فائض مناسبة
           </Link>
           <Link
+            href="/partners"
+            className="text-gypsum/75 transition-colors hover:text-gypsum"
+          >
+            {t.partners.metaTitle}
+          </Link>
+          <Link
             href="/dashboard"
             className="text-gypsum/75 transition-colors hover:text-gypsum"
           >
