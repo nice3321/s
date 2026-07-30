@@ -42,3 +42,6 @@ next-env.d.ts
 
 # قاعدة SQLite المحلية
 /data
+
+# صور الحملة الأصلية (المستعمل منها منسوخ إلى public/brand)
+/ADS1

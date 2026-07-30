@@ -32,8 +32,12 @@ const plexMono = IBM_Plex_Mono({
 const t = dictionaries[defaultLocale];
 
 export const metadata: Metadata = {
-  title: t.app.name,
-  description: t.app.tagline,
+  title: {
+    default: "سُفرة — وفر أكثر، واهدر أقل",
+    template: "%s — سُفرة",
+  },
+  description:
+    "احجز وجبات المطاعم بخصم يصل إلى 60% أو استفد من فائض المناسبات المجاني، مع استلام أو توصيل ومعاملة تليق بكل زبون.",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: t.app.name, statusBarStyle: "default" },
 };
