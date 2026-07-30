@@ -172,10 +172,31 @@ export const en = {
       reputationBody: "Your participation is recorded in what was rescued in your district — in numbers you can show, not claims.",
     },
 
+    heroBadgeOne: "Payment reaches you directly",
+    heroBadgeTwo: "No subscription, no signup fee",
+    trustOne: "Your kitchen unchanged",
+    trustTwo: "You set the quantity and price",
+    trustThree: "Stop whenever you want",
+
+    whyTitle: "Why it is worth it",
     stepsTitle: "How to start",
+    stepsLead: "Three steps, and your first offer goes live the same day.",
     step1: "Fill in the form below, it takes a minute",
     step2: "Your district coordinator calls you and agrees the details",
     step3: "Upload your product photos and start listing offers",
+
+    pactTitle: "The deal, in two columns",
+    pactLead: "What we ask of you, and what you get from us. No hidden terms.",
+    weAsk: "What we ask",
+    weAskOne: "Food as sound as what you serve a full-price customer",
+    weAskTwo: "A clear ready time you stand by",
+    weAskThree: "Receiving a Sufra customer like any other",
+    weGive: "What you get",
+    weGiveOne: "A platform and a district coordinator who follows up",
+    weGiveTwo: "Payment at handover, with no intermediary",
+    weGiveThree: "Documented impact figures you can show",
+
+    partnersOnly: "For registered partners",
 
     galleryTitle: "From our partners' kitchens",
     galleryEmpty: "No photos yet. The first partner to upload appears here.",
