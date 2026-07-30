@@ -1,4 +1,30 @@
-import type { CreateEventInput, District, Event, Organization } from "@/lib/types";
+import type {
+  BoardEvent,
+  CreateEventInput,
+  District,
+  Event,
+  Organization,
+} from "@/lib/types";
+
+export interface BoardQuery {
+  /** طول النافذة من الآن. الآن يُقرأ داخل المزوّد لا في المكوّن. */
+  windowMs: number;
+  /** نطاق رؤية المنسّق. غيابه يعني كل المناطق — للمشرف وحده. */
+  districtIds?: string[];
+}
+
+export interface BoardResult {
+  windowStart: number;
+  events: BoardEvent[];
+}
+
+/** أرقام التغطية المعروضة في الصفحة الرئيسية — من القاعدة، لا ثوابت مكتوبة. */
+export interface Coverage {
+  districts: number;
+  organizations: number;
+  teams: number;
+  households: number;
+}
 
 /**
  * واجهة الوصول للبيانات. المكوّنات وإجراءات الخادم تتعامل مع هذه الواجهة فقط،
@@ -17,4 +43,9 @@ export interface DataProvider {
   /** ينشئ المناسبة وصاحبها معاً في معاملة واحدة، ويكتب في سجل التدقيق. */
   createEvent(input: CreateEventInput): Promise<Event>;
   getEvent(id: string): Promise<Event | null>;
+
+  /** مناسبات لوحة المنسّق داخل نافذة زمنية، مرتّبة بانتهاء التقديم. */
+  listBoardEvents(query: BoardQuery): Promise<BoardResult>;
+
+  getCoverage(): Promise<Coverage>;
 }

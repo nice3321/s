@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans_Arabic, Noto_Kufi_Arabic } from "next/font/google";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { Toaster } from "@/components/ui/sonner";
 import { defaultLocale, dictionaries, dirOf } from "@/lib/i18n";
 import "./globals.css";
@@ -51,7 +53,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       className={`${notoKufi.variable} ${plexArabic.variable} ${plexMono.variable} h-full`}
     >
       <body className="flex min-h-full flex-col">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:z-50 focus:rounded-lg focus:bg-palm focus:px-4 focus:py-2 focus:text-gypsum"
+        >
+          {t.nav.skipToContent}
+        </a>
+        <SiteHeader />
         {children}
+        <SiteFooter />
         <Toaster position="top-center" richColors />
       </body>
     </html>

@@ -5,12 +5,13 @@ import { DatabaseSync } from "node:sqlite";
 import { forecastSurplusKg } from "@/lib/config";
 import type {
   AuditEntry,
+  BoardEvent,
   CreateEventInput,
   District,
   Event,
   Organization,
 } from "@/lib/types";
-import type { DataProvider } from "./provider";
+import type { BoardQuery, BoardResult, Coverage, DataProvider } from "./provider";
 
 // صفوف SQLite خام — تحويلها إلى أنواع المجال يحصل في الدوال أسفله.
 type Row = Record<string, string | number | bigint | null | Uint8Array>;
@@ -228,5 +229,63 @@ export class SqliteProvider implements DataProvider {
       .prepare("SELECT * FROM events WHERE id = ? AND deleted_at IS NULL")
       .get(id) as Row | undefined;
     return row ? toEvent(row) : null;
+  }
+
+  async listBoardEvents(query: BoardQuery): Promise<BoardResult> {
+    const windowStart = Date.now();
+    // نطاق المناطق يُحقن كعلامات استفهام بعددها — لا تركيب نصوص في SQL.
+    const scoped = query.districtIds && query.districtIds.length > 0;
+    const placeholders = scoped ? query.districtIds!.map(() => "?").join(",") : "";
+
+    const rows = this.db
+      .prepare(
+        `SELECT e.id, e.event_type, e.event_date, e.expected_guests, e.serving_ends_at,
+                e.forecast_surplus_kg, e.status, e.district_id,
+                d.name_ar AS district_name_ar,
+                o.name_ar AS organization_name_ar,
+                u.name    AS host_name,
+                u.phone   AS host_phone
+           FROM events e
+           JOIN districts d     ON d.id = e.district_id
+           JOIN users u         ON u.id = e.host_user_id
+           LEFT JOIN organizations o ON o.id = e.organization_id
+          WHERE e.deleted_at IS NULL
+            AND e.status <> 'cancelled'
+            AND e.serving_ends_at BETWEEN ? AND ?
+            ${scoped ? `AND e.district_id IN (${placeholders})` : ""}
+          ORDER BY e.serving_ends_at`,
+      )
+      .all(windowStart, windowStart + query.windowMs, ...(scoped ? query.districtIds! : [])) as Row[];
+
+    const events = rows.map((r) => ({
+      id: str(r.id),
+      eventType: str(r.event_type) as BoardEvent["eventType"],
+      eventDate: num(r.event_date),
+      expectedGuests: num(r.expected_guests),
+      servingEndsAt: num(r.serving_ends_at),
+      forecastSurplusKg: num(r.forecast_surplus_kg),
+      status: str(r.status) as BoardEvent["status"],
+      districtId: str(r.district_id),
+      districtNameAr: str(r.district_name_ar),
+      organizationNameAr: nullableStr(r.organization_name_ar),
+      hostName: str(r.host_name),
+      hostPhone: str(r.host_phone),
+    }));
+
+    return { windowStart, events };
+  }
+
+  async getCoverage(): Promise<Coverage> {
+    const one = (sql: string): number =>
+      Number((this.db.prepare(sql).get() as { c: number | bigint }).c);
+
+    return {
+      districts: one("SELECT count(*) c FROM districts WHERE deleted_at IS NULL"),
+      organizations: one(
+        "SELECT count(*) c FROM organizations WHERE deleted_at IS NULL AND status = 'approved'",
+      ),
+      teams: one("SELECT count(*) c FROM teams WHERE deleted_at IS NULL"),
+      households: one("SELECT count(*) c FROM recipients WHERE deleted_at IS NULL"),
+    };
   }
 }

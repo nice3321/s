@@ -80,6 +80,22 @@ export interface Event {
   createdAt: number;
 }
 
+/** صف واحد في لوحة المنسّق — المناسبة مع ما يلزم عرضه معها. */
+export interface BoardEvent {
+  id: string;
+  eventType: EventType;
+  eventDate: number;
+  expectedGuests: number;
+  servingEndsAt: number;
+  forecastSurplusKg: number;
+  status: EventStatus;
+  districtId: string;
+  districtNameAr: string;
+  organizationNameAr: string | null;
+  hostName: string;
+  hostPhone: string;
+}
+
 export interface AuditEntry {
   actorUserId: string | null;
   entityType: string;

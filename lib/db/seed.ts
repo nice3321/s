@@ -1,15 +1,30 @@
 // بذر بيانات تجريبية واقعية للأنبار. يُشغَّل: npm run seed
-// آمن للتكرار — يمسح جداول البذر ويعيد كتابتها، ولا يمسّ audit_log (إلحاق فقط).
+//
+// يبدأ من ملف قاعدة نظيف. لا يمكن «تنظيف» الجداول بـ DELETE لأن audit_log
+// إلحاق فقط بالتصميم (القاعدة ٦) ويشير إلى users — وهذا مقصود، لا عيب.
 
 import { randomUUID } from "node:crypto";
-import { mkdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 const DB_PATH = process.env.SUFRA_DB_PATH ?? join(process.cwd(), "data", "sufra.db");
 const now = Date.now();
 
+// حارس: البذر يمسح كل شيء. لا يعمل على إنتاج إلا بإقرار صريح.
+if (process.env.NODE_ENV === "production" && process.env.SUFRA_SEED_FORCE !== "1") {
+  console.error(
+    "رفض: البذر يمسح قاعدة البيانات كاملة، والبيئة إنتاج.\n" +
+      "لو كان هذا مقصوداً فعلاً: SUFRA_SEED_FORCE=1 npm run seed",
+  );
+  process.exit(1);
+}
+
 mkdirSync(dirname(DB_PATH), { recursive: true });
+for (const f of [DB_PATH, `${DB_PATH}-wal`, `${DB_PATH}-shm`]) {
+  if (existsSync(f)) rmSync(f);
+}
+
 const db = new DatabaseSync(DB_PATH);
 db.exec(readFileSync(join(process.cwd(), "lib", "db", "schema.sql"), "utf8"));
 
@@ -63,23 +78,6 @@ const nextPhone = () => `+9647${String(++phoneCounter).slice(0, 9)}`;
 
 db.exec("BEGIN");
 try {
-  // ترتيب المسح يحترم المفاتيح الأجنبية
-  for (const t of [
-    "deliveries",
-    "runs",
-    "incidents",
-    "batches",
-    "listings",
-    "events",
-    "recipients",
-    "teams",
-    "organizations",
-    "users",
-    "districts",
-  ]) {
-    db.exec(`DELETE FROM ${t}`);
-  }
-
   const insDistrict = db.prepare(
     `INSERT INTO districts (id, name_ar, name_en, city, center_lat, center_lng)
      VALUES (?, ?, ?, ?, ?, ?)`,
@@ -160,6 +158,76 @@ try {
     );
   }
 
+  // مناسبات موزّعة على نافذة اللوحة (الآن حتى ٧٢ ساعة) بحالات مختلفة،
+  // حتى تُقرأ اللوحة كما ستُقرأ في التشغيل الحقيقي لا كقائمة فارغة.
+  const orgRows = db.prepare("SELECT id, district_id, name_ar FROM organizations").all() as Array<{
+    id: string;
+    district_id: string;
+    name_ar: string;
+  }>;
+
+  const plannedEvents: Array<{
+    type: "wedding" | "engagement" | "feast" | "funeral" | "other";
+    hours: number; // ساعات من الآن حتى انتهاء التقديم
+    guests: number;
+    district: string;
+    withVenue: boolean;
+    status: "draft" | "confirmed" | "team_assigned";
+    host: string;
+    cuisine: string;
+  }> = [
+    { type: "wedding",    hours: 3,  guests: 450, district: "ramadi",   withVenue: true,  status: "team_assigned", host: "أبو محمد الدليمي",  cuisine: "قوزي ودولمة وتمن — فيه لحم" },
+    { type: "funeral",    hours: 5,  guests: 220, district: "fallujah", withVenue: false, status: "confirmed",     host: "أبو عمر الجميلي",   cuisine: "تمن ومرق فاصولياء" },
+    { type: "engagement", hours: 8,  guests: 160, district: "ramadi",   withVenue: true,  status: "confirmed",     host: "أم يوسف العيساوي",  cuisine: "برياني دجاج وحلويات" },
+    { type: "feast",      hours: 22, guests: 700, district: "fallujah", withVenue: true,  status: "draft",         host: "لجنة جامع الحي",    cuisine: "قوزي وتمن — كمية كبيرة" },
+    { type: "wedding",    hours: 27, guests: 520, district: "hit",      withVenue: true,  status: "confirmed",     host: "أبو أحمد الراوي",   cuisine: "مشاوي وتمن ومقبلات" },
+    { type: "funeral",    hours: 31, guests: 180, district: "haditha",  withVenue: false, status: "draft",         host: "أبو خالد الحديثي",  cuisine: "تمن ومرق" },
+    { type: "wedding",    hours: 46, guests: 380, district: "ramadi",   withVenue: true,  status: "confirmed",     host: "أبو سيف الفهداوي",  cuisine: "قوزي وسلطات وحلويات" },
+    { type: "engagement", hours: 50, guests: 120, district: "anah",     withVenue: true,  status: "draft",         host: "أم عبدالله العاني", cuisine: "دولمة وكبة" },
+    { type: "feast",      hours: 63, guests: 900, district: "fallujah", withVenue: true,  status: "confirmed",     host: "ديوان آل الجميلي",  cuisine: "قوزي وتمن — وليمة عشائرية" },
+    { type: "wedding",    hours: 69, guests: 300, district: "hit",      withVenue: false, status: "draft",         host: "أبو نور الهيتي",    cuisine: "برياني ومشاوي" },
+  ];
+
+  const insEvent = db.prepare(
+    `INSERT INTO events (id, organization_id, host_user_id, event_type, event_date, expected_guests,
+                         cuisine_notes, serving_ends_at, district_id, lat, lng, forecast_surplus_kg,
+                         service_fee_iqd, status, unserved_confirmed, unserved_confirmed_by,
+                         declaration_signature, declaration_signed_at, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 1, ?, ?, ?, ?)`,
+  );
+
+  for (const [i, p] of plannedEvents.entries()) {
+    const d = districts.find((x) => x.id === p.district)!;
+    const venue = p.withVenue ? orgRows.find((o) => o.district_id === p.district) : undefined;
+
+    const hostId = randomUUID();
+    insUser.run(hostId, p.host, nextPhone(), "host", JSON.stringify([p.district]), now);
+
+    const servingEndsAt = now + p.hours * 3_600_000;
+    // نفس معادلة الخادم: الضيوف × كغم لكل ضيف × نسبة الفائض
+    const forecast = Math.round(p.guests * 0.45 * 0.18 * 10) / 10;
+
+    insEvent.run(
+      randomUUID(),
+      venue?.id ?? null,
+      hostId,
+      p.type,
+      servingEndsAt,
+      p.guests,
+      p.cuisine,
+      servingEndsAt,
+      p.district,
+      d.lat + (i % 5) * 0.003,
+      d.lng + (i % 4) * 0.004,
+      forecast,
+      p.status,
+      hostId,
+      p.host,
+      now,
+      now - (i + 1) * 3_600_000,
+    );
+  }
+
   db.exec("COMMIT");
 } catch (err) {
   db.exec("ROLLBACK");
@@ -170,6 +238,6 @@ const count = (t: string) =>
   Number((db.prepare(`SELECT count(*) c FROM ${t}`).get() as { c: number }).c);
 
 console.log(`✓ ${DB_PATH}`);
-for (const t of ["districts", "users", "organizations", "teams", "recipients"]) {
+for (const t of ["districts", "users", "organizations", "teams", "recipients", "events"]) {
   console.log(`  ${t.padEnd(15)} ${count(t)}`);
 }

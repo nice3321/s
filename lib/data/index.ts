@@ -9,10 +9,14 @@ const DB_PATH = process.env.SUFRA_DB_PATH ?? join(process.cwd(), "data", "sufra.
 
 // اتصال واحد يُعاد استعماله عبر إعادة تحميل التطوير.
 declare global {
-  var __sufraProvider: DataProvider | undefined;
+  var __sufraProvider: SqliteProvider | undefined;
 }
 
 export function getProvider(): DataProvider {
-  globalThis.__sufraProvider ??= new SqliteProvider(DB_PATH);
+  // instanceof لا ??= : بعد إعادة التحميل الساخن يصير SqliteProvider صنفاً جديداً،
+  // فيسقط الفحص وتُبنى نسخة محدّثة بدل نسخة قديمة تنقصها التوابع الجديدة.
+  if (!(globalThis.__sufraProvider instanceof SqliteProvider)) {
+    globalThis.__sufraProvider = new SqliteProvider(DB_PATH);
+  }
   return globalThis.__sufraProvider;
 }
