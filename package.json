@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "seed": "node lib/db/seed.ts",
     "test:rules": "node lib/db/rules.test.ts",
-    "set-password": "node lib/db/set-password.ts"
+    "set-password": "node lib/db/set-password.ts",
+    "backup": "node lib/db/backup.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
