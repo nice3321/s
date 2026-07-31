@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { actorOrThrow, assertOrgMember } from "@/lib/auth/dal";
 import { getProvider } from "@/lib/data";
 import { saveProductImage } from "@/lib/uploads";
 import { normalizeIraqiPhone } from "@/lib/validation";
@@ -89,8 +90,15 @@ export async function uploadProductPhoto(
   if (titleAr.length < 2) return { status: "error", error: "title_required" };
   if (!(file instanceof File)) return { status: "error", error: "empty" };
 
-  // ⚠ لا مصادقة بعد: أي زائر يستطيع الرفع باسم أي منشأة.
-  // حين تصل المصادقة، تُستبدل organizationId القادمة من النموذج بمنشأة الجلسة.
+  // الملكية من الجلسة لا من حقل يرسله المتصفح. كان أي زائر يرفع صوراً باسم أي
+  // شريك؛ الآن `assertOrgMember` ترمي ما لم يكن الفاعل عضواً في تلك المنشأة.
+  try {
+    const actor = await actorOrThrow();
+    assertOrgMember(actor, organizationId);
+  } catch {
+    return { status: "error", error: "forbidden" };
+  }
+
   const saved = await saveProductImage(file);
   if (!saved.ok) return { status: "error", error: saved.error };
 

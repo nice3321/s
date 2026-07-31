@@ -242,11 +242,28 @@ export const en = {
     },
   },
 
+  login: {
+    title: "Team sign in",
+    lead: "This page is for district coordinators and Sufra teams. An admin opens the account for you.",
+    phone: "Phone number",
+    password: "Password",
+    submit: "Sign in",
+    submitting: "Signing in…",
+    logout: "Sign out",
+    denied: "This page is outside your permissions.",
+    error: {
+      badCredentials: "Wrong number or password",
+      locked: "Account temporarily locked after repeated attempts. Try again in 15 minutes.",
+      generic: "Could not sign in. Please try again.",
+    },
+  },
+
   uploadError: {
     empty: "The file is empty",
     too_large: "The photo is larger than 4 MB",
     unsupported_type: "Unsupported format. Use JPG, PNG or WebP",
     org_required: "Choose the business",
+    forbidden: "You are not allowed to upload for this business",
     title_required: "Enter the item name",
     generic: "Upload failed. Please try again.",
   },

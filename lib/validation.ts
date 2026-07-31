@@ -1,5 +1,7 @@
 import { z } from "zod";
-import { MAX_EVENT_DAYS_AHEAD } from "@/lib/config";
+// نسبي لا بالاسم المستعار: هذا الملف تستورده سكربتات تعمل بـ node مباشرة،
+// وnode لا يقرأ paths من tsconfig.
+import { MAX_EVENT_DAYS_AHEAD } from "./config.ts";
 
 /**
  * تحقّق مشترك بين المتصفح والخادم. رسائل الخطأ مفاتيح في القاموس لا نصوصاً،

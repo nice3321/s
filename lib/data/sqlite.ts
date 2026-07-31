@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { type Actor, districtScope, maySeeHostPhone } from "@/lib/auth/actor";
+import { SESSION_TOUCH_MS } from "@/lib/auth/constants";
 import { forecastSurplusKg } from "@/lib/config";
 import { applySchema } from "@/lib/db/schema";
 import type {
@@ -14,7 +16,7 @@ import type {
   PartnerApplicationInput,
   PartnerProduct,
 } from "@/lib/types";
-import type { BoardQuery, BoardResult, Coverage, DataProvider } from "./provider";
+import type { BoardQuery, BoardResult, Coverage, Credential, DataProvider } from "./provider";
 
 // صفوف SQLite خام — تحويلها إلى أنواع المجال يحصل في الدوال أسفله.
 type Row = Record<string, string | number | bigint | null | Uint8Array>;
@@ -114,6 +116,118 @@ export class SqliteProvider implements DataProvider {
         after,
         Date.now(),
       );
+  }
+
+  // ── المصادقة ────────────────────────────────────────────────────────────
+
+  async findCredentialByPhone(phone: string): Promise<Credential | null> {
+    const row = this.db
+      .prepare(
+        `SELECT u.id, u.role, u.district_ids, c.password_hash, c.failed_attempts, c.locked_until
+           FROM users u JOIN user_credentials c ON c.user_id = u.id
+          WHERE u.phone = ? AND u.deleted_at IS NULL AND u.status = 'active'`,
+      )
+      .get(phone) as Row | undefined;
+    if (!row) return null;
+
+    return {
+      userId: str(row.id),
+      role: str(row.role),
+      districtIds: JSON.parse(str(row.district_ids)) as string[],
+      passwordHash: str(row.password_hash),
+      failedAttempts: num(row.failed_attempts),
+      lockedUntil: nullableNum(row.locked_until),
+    };
+  }
+
+  async setPassword(userId: string, passwordHash: string): Promise<void> {
+    const now = Date.now();
+    this.db
+      .prepare(
+        `INSERT INTO user_credentials (user_id, password_hash, password_set_at, updated_at)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(user_id) DO UPDATE SET
+           password_hash = excluded.password_hash,
+           failed_attempts = 0, locked_until = NULL, updated_at = excluded.updated_at`,
+      )
+      .run(userId, passwordHash, now, now);
+
+    this.appendAudit({
+      actorUserId: userId,
+      entityType: "user_credential",
+      entityId: userId,
+      action: "set_password",
+      changedFields: ["password_hash"],
+    });
+  }
+
+  async recordLoginFailure(userId: string, lockAfter: number, lockMs: number): Promise<void> {
+    // القفل في القاعدة لا في الذاكرة: ينجو من إعادة تشغيل الحاوية.
+    this.db
+      .prepare(
+        `UPDATE user_credentials
+            SET failed_attempts = failed_attempts + 1,
+                locked_until = CASE WHEN failed_attempts + 1 >= ? THEN ? ELSE locked_until END,
+                updated_at = ?
+          WHERE user_id = ?`,
+      )
+      .run(lockAfter, Date.now() + lockMs, Date.now(), userId);
+  }
+
+  async clearLoginFailures(userId: string): Promise<void> {
+    this.db
+      .prepare(
+        `UPDATE user_credentials SET failed_attempts = 0, locked_until = NULL, updated_at = ?
+          WHERE user_id = ?`,
+      )
+      .run(Date.now(), userId);
+  }
+
+  async createSession(sessionId: string, userId: string, ttlMs: number): Promise<void> {
+    const now = Date.now();
+    this.db
+      .prepare(
+        `INSERT INTO sessions (id, user_id, created_at, expires_at, last_seen_at)
+         VALUES (?, ?, ?, ?, ?)`,
+      )
+      .run(sessionId, userId, now, now + ttlMs, now);
+  }
+
+  async getActorBySessionId(sessionId: string): Promise<Actor | null> {
+    const row = this.db
+      .prepare(
+        `SELECT u.id, u.role, u.district_ids
+           FROM sessions s JOIN users u ON u.id = s.user_id
+          WHERE s.id = ? AND s.revoked_at IS NULL AND s.expires_at > ?
+            AND u.deleted_at IS NULL AND u.status = 'active'`,
+      )
+      .get(sessionId, Date.now()) as Row | undefined;
+    if (!row) return null;
+
+    return {
+      userId: str(row.id),
+      role: str(row.role) as Actor["role"],
+      districtIds: JSON.parse(str(row.district_ids)) as string[],
+      // عضوية المنشآت تصل مع جدول org_members في مرحلة الطلبات. اليوم فارغة
+      // **عمداً** بدل تخمين ملكية: الرفع يرفض حين تكون فارغة، وهذا أسلم من
+      // منح ملكية بالاستنتاج.
+      orgIds: [],
+    };
+  }
+
+  async touchSession(sessionId: string, ttlMs: number): Promise<void> {
+    const now = Date.now();
+    // مرّة كل ساعة على الأكثر — وإلا صار كل عرض صفحة كتابةً
+    this.db
+      .prepare(
+        `UPDATE sessions SET last_seen_at = ?, expires_at = ?
+          WHERE id = ? AND last_seen_at < ?`,
+      )
+      .run(now, now + ttlMs, sessionId, now - SESSION_TOUCH_MS);
+  }
+
+  async revokeSession(sessionId: string): Promise<void> {
+    this.db.prepare("UPDATE sessions SET revoked_at = ? WHERE id = ?").run(Date.now(), sessionId);
   }
 
   async listDistricts(): Promise<District[]> {
@@ -246,11 +360,12 @@ export class SqliteProvider implements DataProvider {
     return row ? toEvent(row) : null;
   }
 
-  async listBoardEvents(query: BoardQuery): Promise<BoardResult> {
+  async listBoardEvents(actor: Actor, query: BoardQuery): Promise<BoardResult> {
     const windowStart = Date.now();
-    // نطاق المناطق يُحقن كعلامات استفهام بعددها — لا تركيب نصوص في SQL.
-    const scoped = query.districtIds && query.districtIds.length > 0;
-    const placeholders = scoped ? query.districtIds!.map(() => "?").join(",") : "";
+    // النطاق من الفاعل حصراً. غير المشرف بلا مناطق يرى صفراً — لا «كل شيء».
+    const scope = districtScope(actor);
+    const scoped = scope !== null;
+    const placeholders = scoped ? scope.map(() => "?").join(",") : "";
 
     const rows = this.db
       .prepare(
@@ -270,7 +385,7 @@ export class SqliteProvider implements DataProvider {
             ${scoped ? `AND e.district_id IN (${placeholders})` : ""}
           ORDER BY e.serving_ends_at`,
       )
-      .all(windowStart, windowStart + query.windowMs, ...(scoped ? query.districtIds! : [])) as Row[];
+      .all(windowStart, windowStart + query.windowMs, ...(scoped ? scope : [])) as Row[];
 
     const events = rows.map((r) => ({
       id: str(r.id),
@@ -284,7 +399,8 @@ export class SqliteProvider implements DataProvider {
       districtNameAr: str(r.district_name_ar),
       organizationNameAr: nullableStr(r.organization_name_ar),
       hostName: str(r.host_name),
-      hostPhone: str(r.host_phone),
+      // الرقم يُحذف من الكائن نفسه لمن لا يتصل — لا يُرسل ثم يُخفى.
+      hostPhone: maySeeHostPhone(actor, str(r.district_id)) ? str(r.host_phone) : null,
     }));
 
     return { windowStart, events };

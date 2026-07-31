@@ -1,3 +1,4 @@
+import type { Actor } from "@/lib/auth/actor";
 import type {
   BoardEvent,
   CreateEventInput,
@@ -11,8 +12,6 @@ import type {
 export interface BoardQuery {
   /** طول النافذة من الآن. الآن يُقرأ داخل المزوّد لا في المكوّن. */
   windowMs: number;
-  /** نطاق رؤية المنسّق. غيابه يعني كل المناطق — للمشرف وحده. */
-  districtIds?: string[];
 }
 
 export interface BoardResult {
@@ -35,7 +34,29 @@ export interface Coverage {
  *
  * تنمو الواجهة مع الشاشات المبنيّة فعلاً — لا نعرّف توابع لشاشات لم تُبنَ بعد.
  */
+/** ما يلزم لتسجيل الدخول: المستخدم وتجزئته وحالة قفله. */
+export interface Credential {
+  userId: string;
+  role: string;
+  districtIds: string[];
+  passwordHash: string;
+  failedAttempts: number;
+  lockedUntil: number | null;
+}
+
 export interface DataProvider {
+  // ── المصادقة ──────────────────────────────────────────────────────────────
+  findCredentialByPhone(phone: string): Promise<Credential | null>;
+  setPassword(userId: string, passwordHash: string): Promise<void>;
+  recordLoginFailure(userId: string, lockAfter: number, lockMs: number): Promise<void>;
+  clearLoginFailures(userId: string): Promise<void>;
+
+  createSession(sessionId: string, userId: string, ttlMs: number): Promise<void>;
+  /** يعيد الفاعل من تجزئة الرمز، أو null لجلسة غائبة أو منتهية أو مُبطَلة. */
+  getActorBySessionId(sessionId: string): Promise<Actor | null>;
+  touchSession(sessionId: string, ttlMs: number): Promise<void>;
+  revokeSession(sessionId: string): Promise<void>;
+
   listDistricts(): Promise<District[]>;
   getDistrict(id: string): Promise<District | null>;
 
@@ -46,8 +67,11 @@ export interface DataProvider {
   createEvent(input: CreateEventInput): Promise<Event>;
   getEvent(id: string): Promise<Event | null>;
 
-  /** مناسبات لوحة المنسّق داخل نافذة زمنية، مرتّبة بانتهاء التقديم. */
-  listBoardEvents(query: BoardQuery): Promise<BoardResult>;
+  /**
+   * مناسبات لوحة المنسّق داخل نافذة زمنية، مرتّبة بانتهاء التقديم.
+   * النطاق يُشتق من `actor` — لا يقبل هذا التابع نطاقاً من المُستدعي.
+   */
+  listBoardEvents(actor: Actor, query: BoardQuery): Promise<BoardResult>;
 
   getCoverage(): Promise<Coverage>;
 

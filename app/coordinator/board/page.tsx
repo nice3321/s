@@ -1,3 +1,4 @@
+import { requireRole } from "@/lib/auth/dal";
 import { getProvider } from "@/lib/data";
 import { getDictionary } from "@/lib/i18n";
 import { Board } from "./board";
@@ -12,13 +13,13 @@ export const metadata = { title: t.board.title };
 const WINDOW_MS = 72 * 60 * 60 * 1000;
 
 export default async function BoardPage() {
-  const provider = getProvider();
+  // اللوحة تعرض مواعيد وإحداثيات بيوت ستمتلئ بالناس والطعام. لا تُفتح لزائر.
+  const actor = await requireRole("coordinator", "admin");
 
-  // نطاق الرؤية يُمرَّر كوسيط منذ الآن، فحين تصل المصادقة يصير
-  // districtIds = مناطق المنسّق ولا تُلمس هذه الصفحة.
-  // ⚠ لا مصادقة بعد — اللوحة مفتوحة حالياً على كل المناطق.
+  const provider = getProvider();
+  // النطاق يُشتق من الفاعل داخل المزوّد — لا تمرّره هذه الصفحة ولا تستطيع.
   const [board, districts] = await Promise.all([
-    provider.listBoardEvents({ windowMs: WINDOW_MS }),
+    provider.listBoardEvents(actor, { windowMs: WINDOW_MS }),
     provider.listDistricts(),
   ]);
 

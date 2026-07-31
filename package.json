@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "seed": "node lib/db/seed.ts",
-    "test:rules": "node lib/db/rules.test.ts"
+    "test:rules": "node lib/db/rules.test.ts",
+    "set-password": "node lib/db/set-password.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
