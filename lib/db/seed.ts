@@ -4,9 +4,10 @@
 // إلحاق فقط بالتصميم (القاعدة ٦) ويشير إلى users — وهذا مقصود، لا عيب.
 
 import { randomUUID } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { applySchema } from "./schema.ts";
 
 const DB_PATH = process.env.SUFRA_DB_PATH ?? join(process.cwd(), "data", "sufra.db");
 const now = Date.now();
@@ -26,7 +27,7 @@ for (const f of [DB_PATH, `${DB_PATH}-wal`, `${DB_PATH}-shm`]) {
 }
 
 const db = new DatabaseSync(DB_PATH);
-db.exec(readFileSync(join(process.cwd(), "lib", "db", "schema.sql"), "utf8"));
+applySchema(db);
 
 const districts = [
   { id: "ramadi",   ar: "الرمادي", en: "Ramadi",   city: "الرمادي", lat: 33.4258, lng: 43.3089 },

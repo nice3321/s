@@ -3,12 +3,11 @@
 
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { applySchema, readUserVersion } from "./schema.ts";
 
 const db = new DatabaseSync(":memory:");
-db.exec(readFileSync(join(process.cwd(), "lib", "db", "schema.sql"), "utf8"));
+applySchema(db);
 
 const now = Date.now();
 const id = () => randomUUID();
@@ -171,5 +170,31 @@ rejects(
   () => insertBatch({ retained_sample_kept: null }),
   "دفعة مناسبة بلا حقل عيّنة مرفوضة",
 );
+
+// ── نظام الهجرات: التعاقبية ──────────────────────────────────────────────────
+// التطبيق مرّتين يجب ألا يغيّر شيئاً. لو فشل هذا، فكل إقلاع حاوية يعيد تطبيق
+// هجرة مطبَّقة — وهو ما يفسد قاعدة الإنتاج بصمت.
+console.log("نظام الهجرات — التعاقبية");
+
+const tablesBefore = db
+  .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+  .all()
+  .map((r) => (r as { name: string }).name)
+  .join(",");
+const versionBefore = readUserVersion(db);
+
+applySchema(db);
+
+assert.equal(readUserVersion(db), versionBefore, "user_version تغيّر عند إعادة التطبيق");
+assert.equal(
+  db
+    .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+    .all()
+    .map((r) => (r as { name: string }).name)
+    .join(","),
+  tablesBefore,
+  "قائمة الجداول تغيّرت عند إعادة التطبيق",
+);
+console.log(`  ✓ التطبيق مرّتين لا يغيّر شيئاً (user_version = ${versionBefore})`);
 
 console.log("\nكل قواعد القسم ٥ المفروضة في القاعدة اجتازت.");

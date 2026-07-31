@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { mkdirSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { forecastSurplusKg } from "@/lib/config";
+import { applySchema } from "@/lib/db/schema";
 import type {
   AuditEntry,
   BoardEvent,
@@ -81,7 +82,7 @@ export class SqliteProvider implements DataProvider {
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true });
     this.db = new DatabaseSync(dbPath);
-    this.db.exec(readFileSync(join(process.cwd(), "lib", "db", "schema.sql"), "utf8"));
+    applySchema(this.db);
   }
 
   /** إلحاق في سجل التدقيق. القاعدة ٦ — كل تغيير حالة يُسجَّل. */
