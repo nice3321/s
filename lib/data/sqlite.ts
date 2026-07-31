@@ -85,12 +85,25 @@ export class SqliteProvider implements DataProvider {
     applySchema(this.db);
   }
 
-  /** إلحاق في سجل التدقيق. القاعدة ٦ — كل تغيير حالة يُسجَّل. */
+  /**
+   * إلحاق في سجل التدقيق. القاعدة ٦ — كل تغيير حالة يُسجَّل.
+   *
+   * العمودان `before_json` و`after_json` يحملان **أسماء الحقول المتغيّرة**
+   * وبيانات غير شخصية فقط. الجدول لا يُعدَّل ولا يُحذف، فأي PII يدخله يبقى أبداً.
+   */
   private appendAudit(entry: AuditEntry): void {
+    const after =
+      entry.changedFields || entry.meta
+        ? JSON.stringify({
+            ...(entry.changedFields ? { fields: entry.changedFields } : {}),
+            ...(entry.meta ?? {}),
+          })
+        : null;
+
     this.db
       .prepare(
         `INSERT INTO audit_log (id, actor_user_id, entity_type, entity_id, action, before_json, after_json, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, NULL, ?, ?)`,
       )
       .run(
         randomUUID(),
@@ -98,8 +111,7 @@ export class SqliteProvider implements DataProvider {
         entry.entityType,
         entry.entityId,
         entry.action,
-        entry.before === null ? null : JSON.stringify(entry.before),
-        entry.after === null ? null : JSON.stringify(entry.after),
+        after,
         Date.now(),
       );
   }
@@ -174,8 +186,9 @@ export class SqliteProvider implements DataProvider {
           entityType: "user",
           entityId: hostUserId,
           action: "create",
-          before: null,
-          after: { name: input.hostName, phone: input.hostPhone, role: "host" },
+          // الاسم والهاتف في صفّ users نفسه — لا هنا، فهذا الجدول لا يُشطب منه
+          changedFields: ["name", "phone", "role"],
+          meta: { role: "host" },
         });
       }
 
@@ -212,8 +225,7 @@ export class SqliteProvider implements DataProvider {
         entityType: "event",
         entityId: eventId,
         action: "create",
-        before: null,
-        after: { status: "draft", forecastSurplusKg: forecast, districtId: input.districtId },
+        meta: { status: "draft", forecastSurplusKg: forecast, districtId: input.districtId },
       });
 
       this.db.exec("COMMIT");
@@ -306,8 +318,9 @@ export class SqliteProvider implements DataProvider {
       entityType: "partner_application",
       entityId: id,
       action: "create",
-      before: null,
-      after: { businessName: input.businessName, businessType: input.businessType },
+      // اسم المنشأة والهاتف في صفّ partner_applications — لا في سجل لا يُشطب
+      changedFields: ["business_name", "contact_name", "phone"],
+      meta: { businessType: input.businessType, districtId: input.districtId },
     });
 
     return id;
@@ -358,8 +371,7 @@ export class SqliteProvider implements DataProvider {
       entityType: "partner_product",
       entityId: id,
       action: "create",
-      before: null,
-      after: { organizationId: input.organizationId, fileName: input.fileName },
+      meta: { organizationId: input.organizationId, fileName: input.fileName },
     });
 
     const org = this.db

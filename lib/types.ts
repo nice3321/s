@@ -93,7 +93,12 @@ export interface BoardEvent {
   districtNameAr: string;
   organizationNameAr: string | null;
   hostName: string;
-  hostPhone: string;
+  /**
+   * الرقم كاملاً لمن يحتاج الاتصال فعلاً (منسّق المنطقة، الفريق المكلَّف)،
+   * و`null` لغيره. **لا يُرسل ثم يُخفى بـ CSS**: خصائص المكوّنات العميلة
+   * تُسلسَل داخل مصدر الصفحة، فالإخفاء البصري لا يخفي شيئاً.
+   */
+  hostPhone: string | null;
 }
 
 export type ApplicantRole = "owner" | "staff" | "referral";
@@ -119,13 +124,25 @@ export interface PartnerProduct {
   createdAt: number;
 }
 
+/**
+ * مدخل في سجل التدقيق.
+ *
+ * ⚠ `audit_log` محميّ بمحرّكين يمنعان التعديل والحذف — فما يُكتب فيه لا يُشطب
+ * أبداً. لذلك **لا قيم هنا، أسماء حقول فقط**: أي رقم هاتف أو اسم أو عنوان يدخل
+ * هذا الجدول يصير غير قابل للحذف بحكم التصميم نفسه، وهو ما يجعل تلبية طلب
+ * «احذف بياناتي» مستحيلة تقنياً.
+ *
+ * المرجع للقيم هو صفّ الكيان نفسه؛ السجل يجيب «من غيّر ماذا ومتى» لا «إلى ماذا».
+ */
 export interface AuditEntry {
   actorUserId: string | null;
   entityType: string;
   entityId: string;
   action: string;
-  before: unknown;
-  after: unknown;
+  /** أسماء الحقول المتغيّرة — لا قيمها. مثال: ["status", "price_iqd"] */
+  changedFields?: string[];
+  /** بيانات غير شخصية فقط: حالات، معرّفات، أرقام. تُراجَع قبل الإضافة. */
+  meta?: Record<string, string | number | boolean | null>;
 }
 
 /** ما تحتاجه شاشة تسجيل المناسبة لإنشاء مناسبة وصاحبها معاً. */
